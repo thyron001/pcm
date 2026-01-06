@@ -71,14 +71,14 @@ def codificar_polar_nrz(bits, A):
     
     Retorna:
     --------
-    señal : array
+    senal : array
         Señal codificada (un valor por bit)
     """
-    señal = np.where(bits == 1, A, -A)
-    return señal
+    senal = np.where(bits == 1, A, -A)
+    return senal
 
 
-def canal_awgn(señal, SNR_dB, A, Tb):
+def canal_awgn(senal, SNR_dB, A, Tb):
     """
     Agrega ruido AWGN al canal.
     
@@ -91,7 +91,7 @@ def canal_awgn(señal, SNR_dB, A, Tb):
     
     Parámetros:
     -----------
-    señal : array
+    senal : array
         Señal transmitida (un valor por bit)
     SNR_dB : float
         Relación señal a ruido en dB
@@ -102,7 +102,7 @@ def canal_awgn(señal, SNR_dB, A, Tb):
     
     Retorna:
     --------
-    señal_ruidosa : array
+    senal_ruidosa : array
         Señal con ruido AWGN agregado
     ruido : array
         Ruido agregado (para análisis)
@@ -123,15 +123,15 @@ def canal_awgn(señal, SNR_dB, A, Tb):
     sigma = np.sqrt(sigma2)
     
     # Generar ruido AWGN (un valor por bit)
-    ruido = np.random.normal(0, sigma, len(señal))
+    ruido = np.random.normal(0, sigma, len(senal))
     
     # Señal con ruido
-    señal_ruidosa = señal + ruido
+    senal_ruidosa = senal + ruido
     
-    return señal_ruidosa, ruido
+    return senal_ruidosa, ruido
 
 
-def filtro_acoplado(señal, A, Tb):
+def filtro_acoplado(senal, A, Tb):
     """
     Implementa el filtro acoplado (matched filter) para Polar NRZ.
     
@@ -144,7 +144,7 @@ def filtro_acoplado(señal, A, Tb):
     
     Parámetros:
     -----------
-    señal : array
+    senal : array
         Señal recibida (con ruido) - un valor por bit
     A : float
         Amplitud del pulso
@@ -158,7 +158,7 @@ def filtro_acoplado(señal, A, Tb):
     """
     # Para Polar NRZ, el filtro acoplado multiplica por Tb
     # Esto es equivalente a integrar el pulso rectangular
-    salida_filtro = señal * Tb
+    salida_filtro = senal * Tb
     return salida_filtro
 
 
@@ -311,25 +311,25 @@ def generar_forma_onda_grafica(bits, A, Tb, muestras_por_bit=20):
     
     Retorna:
     --------
-    señal : array
+    senal : array
         Forma de onda para gráfica
     tiempo : array
         Vector de tiempo
     """
     N = len(bits)
     N_samples = N * muestras_por_bit
-    señal = np.zeros(N_samples)
+    senal = np.zeros(N_samples)
     tiempo = np.arange(N_samples) * (Tb / muestras_por_bit)
     
     for i, bit in enumerate(bits):
         inicio = i * muestras_por_bit
         fin = (i + 1) * muestras_por_bit
         if bit == 1:
-            señal[inicio:fin] = A
+            senal[inicio:fin] = A
         else:
-            señal[inicio:fin] = -A
+            senal[inicio:fin] = -A
     
-    return señal, tiempo
+    return senal, tiempo
 
 
 # ============================================================================
@@ -350,7 +350,7 @@ print()
 bits_originales = generar_bits(Nbits, P0)
 
 # Codificar en Polar NRZ (mapeo directo: bit -> valor de señal)
-señal_tx = codificar_polar_nrz(bits_originales, A)
+senal_tx = codificar_polar_nrz(bits_originales, A)
 
 # Arrays para almacenar resultados
 BER_simulada = []
@@ -364,10 +364,10 @@ print("-" * 70)
 # Simular para cada valor de SNR
 for SNR_dB in SNR_dB_values:
     # Canal AWGN
-    señal_rx, ruido = canal_awgn(señal_tx, SNR_dB, A, Tb)
+    senal_rx, ruido = canal_awgn(senal_tx, SNR_dB, A, Tb)
     
     # Filtro acoplado
-    salida_filtro = filtro_acoplado(señal_rx, A, Tb)
+    salida_filtro = filtro_acoplado(senal_rx, A, Tb)
     
     # Decisión
     bits_recibidos = decisor(salida_filtro, umbral=0)
@@ -406,14 +406,14 @@ bits_grafica = bits_originales[:N_bits_grafica]
 
 # Generar forma de onda solo para visualización
 muestras_por_bit_grafica = 20
-señal_tx_grafica, tiempo_tx_grafica = generar_forma_onda_grafica(
+senal_tx_grafica, tiempo_tx_grafica = generar_forma_onda_grafica(
     bits_grafica, A, Tb, muestras_por_bit_grafica)
 
 # Usar SNR = 6 dB para las gráficas de señales
 SNR_grafica = 6
-señal_tx_valores = codificar_polar_nrz(bits_grafica, A)
-señal_rx_valores, _ = canal_awgn(señal_tx_valores, SNR_grafica, A, Tb)
-salida_filtro_grafica = filtro_acoplado(señal_rx_valores, A, Tb)
+senal_tx_valores = codificar_polar_nrz(bits_grafica, A)
+senal_rx_valores, _ = canal_awgn(senal_tx_valores, SNR_grafica, A, Tb)
+salida_filtro_grafica = filtro_acoplado(senal_rx_valores, A, Tb)
 
 # Generar forma de onda recibida para visualización (agregar ruido muestreado)
 # Calcular varianza del ruido
@@ -423,8 +423,8 @@ N0 = Eb / SNR_linear
 sigma2 = N0 / (2 * Tb)
 sigma = np.sqrt(sigma2)
 # Generar ruido para la forma de onda (muestreado)
-ruido_grafica = np.random.normal(0, sigma, len(señal_tx_grafica))
-señal_rx_grafica = señal_tx_grafica + ruido_grafica
+ruido_grafica = np.random.normal(0, sigma, len(senal_tx_grafica))
+senal_rx_grafica = senal_tx_grafica + ruido_grafica
 
 # Tiempo para la salida del filtro (muestreada en cada bit)
 tiempo_filtro = np.arange(N_bits_grafica) * Tb + Tb
@@ -435,14 +435,14 @@ fig1.suptitle('Señales PCM - Polar NRZ (Primeros 50 bits, SNR = 6 dB)',
               fontsize=14, fontweight='bold')
 
 # Señal transmitida
-axes[0].plot(tiempo_tx_grafica, señal_tx_grafica, 'b-', linewidth=1.5)
+axes[0].plot(tiempo_tx_grafica, senal_tx_grafica, 'b-', linewidth=1.5)
 axes[0].set_ylabel('Amplitud (V)', fontsize=11)
 axes[0].set_title('Señal Transmitida', fontsize=12, fontweight='bold')
 axes[0].grid(True, alpha=0.3)
 axes[0].set_xlim([tiempo_tx_grafica[0], tiempo_tx_grafica[-1]])
 
 # Señal recibida (con ruido)
-axes[1].plot(tiempo_tx_grafica, señal_rx_grafica, 'r-', linewidth=1)
+axes[1].plot(tiempo_tx_grafica, senal_rx_grafica, 'r-', linewidth=1)
 axes[1].set_ylabel('Amplitud (V)', fontsize=11)
 axes[1].set_title('Señal Recibida (con ruido AWGN)', fontsize=12, fontweight='bold')
 axes[1].grid(True, alpha=0.3)
@@ -461,7 +461,7 @@ axes[2].legend(fontsize=10)
 axes[2].set_xlim([tiempo_filtro[0] - Tb, tiempo_filtro[-1] + Tb])
 
 plt.tight_layout()
-plt.savefig('señales_pcm.png', dpi=300, bbox_inches='tight')
+plt.savefig('senales_pcm.png', dpi=300, bbox_inches='tight')
 print("  [OK] Grafica de senales guardada: senales_pcm.png")
 
 # 2. Gráfica BER simulada vs teórica (Polar NRZ)
@@ -547,7 +547,7 @@ print()
 print("4. FILTRO ACOPLADO:")
 print("   Para pulso rectangular p(t) = A en [0, Tb):")
 print("   Como trabajamos con valores por bit, el filtro acoplado")
-print("   multiplica por Tb: salida = señal * Tb")
+print("   multiplica por Tb: salida = senal * Tb")
 print("=" * 70)
 
 # Las gráficas se guardan automáticamente
