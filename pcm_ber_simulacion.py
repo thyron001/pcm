@@ -336,16 +336,6 @@ def generar_forma_onda_grafica(bits, A, Tb, muestras_por_bit=20):
 # SIMULACIÓN PRINCIPAL
 # ============================================================================
 
-print("=" * 70)
-print("SIMULACION DE BER PARA PCM - POLAR NRZ")
-print("=" * 70)
-print(f"Numero de bits PCM: {Nbits}")
-print(f"Amplitud A: {A} V")
-print(f"Tiempo de bit Tb: {Tb} s (solo para calculo de energia)")
-print(f"SNR range: {SNR_dB_min} a {SNR_dB_max} dB (paso: {SNR_dB_step} dB)")
-print("=" * 70)
-print()
-
 # Generar secuencia de bits PCM (la misma para todos los SNR)
 bits_originales = generar_bits(Nbits, P0)
 
@@ -355,11 +345,6 @@ senal_tx = codificar_polar_nrz(bits_originales, A)
 # Arrays para almacenar resultados
 BER_simulada = []
 BER_teorica = []
-
-print("Ejecutando simulacion para cada SNR...")
-print("-" * 70)
-print(f"{'SNR (dB)':<12} {'BER Simulada':<18} {'BER Teorica':<18} {'Errores':<10}")
-print("-" * 70)
 
 # Simular para cada valor de SNR
 for SNR_dB in SNR_dB_values:
@@ -379,11 +364,6 @@ for SNR_dB in SNR_dB_values:
     # BER teórica
     BER_teo = ber_teorica_polar_nrz(SNR_dB)
     BER_teorica.append(BER_teo)
-    
-    print(f"{SNR_dB:<12.1f} {BER:<18.6e} {BER_teo:<18.6e} {errores:<10}")
-
-print("-" * 70)
-print()
 
 # Convertir a arrays numpy
 BER_simulada = np.array(BER_simulada)
@@ -399,7 +379,6 @@ BER_simulada_grafica[BER_simulada_grafica == 0] = 1.0 / (2.0 * Nbits)
 # ============================================================================
 
 # 1. Gráfica de señales para un segmento corto (primeros 50 bits)
-print("Generando graficas...")
 
 N_bits_grafica = 50
 bits_grafica = bits_originales[:N_bits_grafica]
@@ -462,7 +441,7 @@ axes[2].set_xlim([tiempo_filtro[0] - Tb, tiempo_filtro[-1] + Tb])
 
 plt.tight_layout()
 plt.savefig('senales_pcm.png', dpi=300, bbox_inches='tight')
-print("  [OK] Grafica de senales guardada: senales_pcm.png")
+plt.close(fig1)
 
 # 2. Gráfica BER simulada vs teórica (Polar NRZ)
 fig2, ax = plt.subplots(figsize=(10, 7))
@@ -481,7 +460,7 @@ ax.set_xlim([SNR_dB_min - 0.5, SNR_dB_max + 0.5])
 
 plt.tight_layout()
 plt.savefig('ber_polar_nrz.png', dpi=300, bbox_inches='tight')
-print("  [OK] Grafica BER Polar NRZ guardada: ber_polar_nrz.png")
+plt.close(fig2)
 
 # 3. Gráfica de curvas teóricas comparativas
 SNR_teorico = np.linspace(SNR_dB_min, SNR_dB_max, 100)
@@ -520,36 +499,7 @@ ax.set_ylim([1e-15, 1])
 
 plt.tight_layout()
 plt.savefig('ber_teoricas_comparacion.png', dpi=300, bbox_inches='tight')
-print("  [OK] Grafica comparativa teorica guardada: ber_teoricas_comparacion.png")
+plt.close(fig3)
 
-print()
-print("=" * 70)
-print("SIMULACION COMPLETADA")
-print("=" * 70)
-print()
-print("EXPLICACION TECNICA:")
-print("-" * 70)
-print("1. DEFINICION DE SNR:")
-print("   SNR = Eb/N0 donde:")
-print("   - Eb = A^2 * Tb (energia por bit para Polar NRZ)")
-print("   - N0 = densidad espectral de potencia del ruido")
-print()
-print("2. CALCULO DE VARIANZA DEL RUIDO:")
-print("   Trabajamos directamente con valores por bit (flujo PCM):")
-print("   sigma^2 = N0 / (2*Tb)")
-print("   donde N0 = Eb / (10^(SNR_dB/10))")
-print()
-print("3. BER TEORICA PARA POLAR NRZ:")
-print("   Pe = Q(sqrt(2*Eb/N0))")
-print("   donde Q(x) = 0.5 * erfc(x/sqrt(2))")
-print("   Para P0 = P1 = 0.5, el umbral optimo es 0.")
-print()
-print("4. FILTRO ACOPLADO:")
-print("   Para pulso rectangular p(t) = A en [0, Tb):")
-print("   Como trabajamos con valores por bit, el filtro acoplado")
-print("   multiplica por Tb: salida = senal * Tb")
-print("=" * 70)
-
-# Las gráficas se guardan automáticamente
-# Para ver las gráficas, descomentar la siguiente línea:
-# plt.show()
+# Mostrar las gráficas
+plt.show()
